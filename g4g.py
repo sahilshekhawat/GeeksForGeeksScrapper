@@ -67,7 +67,7 @@ def scrape_category(categoryUrl):
     # Selecting links which are in the category page
     links = [a.attrs.get('href') for a in soup.select('article li a')]
     # Removing links for the categories with anchor on same page
-    links = [link for link in links if not link.startswith('#')]
+    links = [link.strip() for link in links if not link.startswith('#')]
 
     print("Found: " + str(len(links)) + " links")
     i = 1
@@ -84,7 +84,15 @@ def scrape_category(categoryUrl):
             [script.extract() for script in link_soup(["script", "ins"])]
             for code_tag in link_soup.find_all('pre'):
                 code_tag['class'] = code_tag.get('class', []) + ['prettyprint']
+            # Change id for article first
             article = link_soup.find('article')
+            article["id"] = link.replace("http://geeksforgeeks.org/", "").replace("http://geeksquiz.com/", "").replace("http://www.geeksforgeeks.org/", "")
+            # Now Change all the link to point to respective id
+            for a in article.findAll('a'):
+                try:
+                    a['href'] = a['href'].replace("http://geeksforgeeks.org/", "#").replace("http://geeksquiz.com/", "#").replace("http://www.geeksforgeeks.org/", "#")
+                except KeyError:
+                    continue
             # Now add this article to list of all articles
             articles.append(article.encode('UTF-8'))
         # Sometimes hanging. So Ctrl ^ C, and try the next link.
